@@ -98,6 +98,7 @@ class _FlutterPainterExampleState extends State<FlutterPainterExample> {
     // Listen to focus events of the text field
     textFocusNode.addListener(onFocus);
     // Initialize background
+    // controller.transformationController.value
     initBackground();
   }
 
