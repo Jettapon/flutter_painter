@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 import 'dart:ui';
 
+import 'package:example/widgets/polygon_widget.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_painter/flutter_painter.dart';
@@ -119,6 +120,7 @@ class _FlutterPainterExampleState extends State<FlutterPainterExample> {
     setState(() {});
   }
 
+  bool drawPolygon = false;
   Widget buildDefault(BuildContext context) {
     return Scaffold(
         appBar: PreferredSize(
@@ -182,12 +184,19 @@ class _FlutterPainterExampleState extends State<FlutterPainterExample> {
               Positioned.fill(
                 child: Center(
                   child: AspectRatio(
-                    aspectRatio:
-                        backgroundImage!.width / backgroundImage!.height,
-                    child: FlutterPainter(
-                      controller: controller,
-                    ),
-                  ),
+                      aspectRatio:
+                          backgroundImage!.width / backgroundImage!.height,
+                      child: PolygonWidget(
+                        paint: controller.shapePaint,
+                        onFinishDrawing: (points) async {
+                          drawPolygon = false;
+                          await renderImage(points);
+                        },
+                        child: FlutterPainter(
+                          controller: controller,
+                        ),
+                        drawPolygon: drawPolygon,
+                      )),
                 ),
               ),
             Positioned(
@@ -429,6 +438,15 @@ class _FlutterPainterExampleState extends State<FlutterPainterExample> {
                 ),
                 onPressed: addSticker,
               ),
+              IconButton(
+                icon: const Icon(
+                  PhosphorIcons.polygon,
+                ),
+                onPressed: () {
+                  drawPolygon = true;
+                  setState(() {});
+                },
+              ),
               // Add shapes
               if (controller.shapeFactory == null)
                 PopupMenuButton<ShapeFactory?>(
@@ -601,6 +619,59 @@ class _FlutterPainterExampleState extends State<FlutterPainterExample> {
 
     controller.replaceDrawable(
         imageDrawable, imageDrawable.copyWith(flipped: !imageDrawable.flipped));
+  }
+
+  Future<void> renderImage(List<Offset> points) async {
+    final dx =
+        points.map((e) => e.dx).reduce((value, element) => value + element);
+    final dy =
+        points.map((e) => e.dy).reduce((value, element) => value + element);
+
+    final minDx = points
+        .map((e) => e.dx)
+        .reduce((value, element) => value < element ? value : element);
+    final maxDx = points
+        .map((e) => e.dx)
+        .reduce((value, element) => value > element ? value : element);
+    final minDy = points
+        .map((e) => e.dy)
+        .reduce((value, element) => value < element ? value : element);
+    final maxDy = points
+        .map((e) => e.dy)
+        .reduce((value, element) => value > element ? value : element);
+
+    final center = Offset(dx / points.length, dy / points.length);
+
+    final width = (minDx - maxDx).abs();
+    final height = (minDy - maxDy).abs();
+
+    final recorder = ui.PictureRecorder();
+    final canvas = Canvas(recorder);
+
+    final a = Path();
+    a.addPolygon(points, true);
+    canvas.drawPath(a, controller.shapePaint!);
+
+    final picture = recorder.endRecording();
+    final img = await picture.toImage(width.toInt(), height.toInt());
+    final test = await img.pngBytes;
+
+    final drawable = ImageDrawable(image: img, position: center);
+    controller.addDrawables([drawable]);
+    showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+                actions: [
+                  IconButton(
+                      onPressed: () => Navigator.pop(context),
+                      icon: Icon(Icons.close))
+                ],
+                title: const Text("Rendered Image"),
+                content: Center(
+                  child: Container(
+                      color: Colors.amber, child: Image.memory(test!)),
+                )));
+    setState(() {});
   }
 }
 
