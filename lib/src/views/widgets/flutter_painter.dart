@@ -37,6 +37,8 @@ typedef DrawableDeletedCallback = Function(Drawable drawable);
 
 typedef DrawableOnDoubleTapCallback = Function(Drawable drawable);
 
+typedef DrawableOnTapCallback = Function(Drawable drawable);
+
 typedef DrawableLongPressCallback = Function(Drawable drawable);
 
 /// Defines the builder used with [FlutterPainter.builder] constructor.
@@ -58,6 +60,8 @@ class FlutterPainter extends StatelessWidget {
   final ValueChanged<ObjectDrawable?>? onSelectedObjectDrawableChanged;
 
   final DrawableOnDoubleTapCallback? onDoubleTabSelectedObjectDrawable;
+
+  final DrawableOnTapCallback? onTabSelectedObjectDrawable;
 
   final DrawableLongPressCallback? onLongPressObjectDrawable;
 
@@ -146,6 +150,8 @@ class _FlutterPainterWidget extends StatelessWidget {
 
   final DrawableOnDoubleTapCallback? onDoubleTabSelectedObjectDrawable;
 
+  final DrawableOnTapCallback? onTabSelectedObjectDrawable;
+
   final DrawableLongPressCallback? onLongPressObjectDrawable;
 
   /// Callback when the selected [ObjectDrawable] changes.
@@ -224,6 +230,8 @@ class _FlutterPainterWidget extends StatelessWidget {
       onLongPressObjectDrawable?.call(notification.drawable);
     } else if (notification is DrawableDoubleTapNotification) {
       onDoubleTabSelectedObjectDrawable?.call(notification.drawable);
+    }else if (notification is DrawableTapNotification) {
+      onTabSelectedObjectDrawable?.call(notification.drawable);
     }
     return true;
   }
