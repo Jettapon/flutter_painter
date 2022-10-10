@@ -244,25 +244,23 @@ class EditTextWidgetState extends State<EditTextWidget>
           padding: EdgeInsets.only(
               bottom: (keyboardHeight - (screenHeight - height - y))
                   .clamp(0, screenHeight)),
-          child: Center(
-            child: TextField(
-              decoration: const InputDecoration(
-                border: InputBorder.none,
-                contentPadding: EdgeInsets.zero,
-                isDense: true,
-              ),
-              cursorColor: Colors.white,
-              buildCounter: buildEmptyCounter,
-              maxLength: 1000,
-              minLines: 1,
-              maxLines: 10,
-              controller: textEditingController,
-              focusNode: textFieldNode,
-              style: settings.textStyle,
-              textAlign: TextAlign.center,
-              textAlignVertical: TextAlignVertical.center,
-              onEditingComplete: onEditingComplete,
+          child: TextField(
+            decoration: const InputDecoration(
+              border: InputBorder.none,
+              contentPadding: EdgeInsets.zero,
+              isDense: true,
             ),
+            cursorColor: Colors.white,
+            buildCounter: buildEmptyCounter,
+            maxLength: 1000,
+            minLines: 1,
+            maxLines: 10,
+            controller: textEditingController,
+            focusNode: textFieldNode,
+            style: settings.textStyle,
+            textAlign: TextAlign.center,
+            textAlignVertical: TextAlignVertical.center,
+            onEditingComplete: onEditingComplete,
           ),
         ),
       ),
