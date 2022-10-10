@@ -37,6 +37,8 @@ typedef DrawableDeletedCallback = Function(Drawable drawable);
 
 typedef DrawableOnDoubleTapCallback = Function(Drawable drawable);
 
+typedef DrawableOnTapCallback = Function(Drawable drawable);
+
 typedef DrawableLongPressCallback = Function(Drawable drawable);
 
 /// Defines the builder used with [FlutterPainter.builder] constructor.
@@ -58,6 +60,8 @@ class FlutterPainter extends StatelessWidget {
   final ValueChanged<ObjectDrawable?>? onSelectedObjectDrawableChanged;
 
   final DrawableOnDoubleTapCallback? onDoubleTabSelectedObjectDrawable;
+
+  final DrawableOnTapCallback? onTabSelectedObjectDrawable;
 
   final DrawableLongPressCallback? onLongPressObjectDrawable;
 
@@ -145,6 +149,8 @@ class _FlutterPainterWidget extends StatelessWidget {
   final DrawableDeletedCallback? onDrawableDeleted;
 
   final DrawableOnDoubleTapCallback? onDoubleTabSelectedObjectDrawable;
+
+  final DrawableOnTapCallback? onTabSelectedObjectDrawable;
 
   final DrawableLongPressCallback? onLongPressObjectDrawable;
 
