@@ -230,6 +230,8 @@ class _FlutterPainterWidget extends StatelessWidget {
       onLongPressObjectDrawable?.call(notification.drawable);
     } else if (notification is DrawableDoubleTapNotification) {
       onDoubleTabSelectedObjectDrawable?.call(notification.drawable);
+    }else if (notification is DrawableTapNotification) {
+      onTabSelectedObjectDrawable?.call(notification.drawable);
     }
     return true;
   }

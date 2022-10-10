@@ -178,6 +178,7 @@ class _ObjectWidgetState extends State<_ObjectWidget> {
                             behavior: HitTestBehavior.opaque,
                             onTap: () => tapDrawable(drawable),
                             onDoubleTap: () => doubleTapDrawable(drawable),
+                            onTap: () => TapDrawable(drawable),
                             onLongPress: () => longPressDrawable(drawable),
                             onScaleStart: (details) =>
                                 onDrawableScaleStart(entry, details),
@@ -601,6 +602,17 @@ class _ObjectWidgetState extends State<_ObjectWidget> {
     // if (drawable.locked) return;
 
     DrawableDoubleTapNotification(drawable).dispatch(context);
+
+    setState(() {
+      // selectedDrawableIndex = drawables.indexOf(drawable);
+      controller?.selectObjectDrawable(drawable);
+    });
+  }
+
+  void TapDrawable(ObjectDrawable drawable) {
+    // if (drawable.locked) return;
+
+    DrawableTapNotification(drawable).dispatch(context);
 
     setState(() {
       // selectedDrawableIndex = drawables.indexOf(drawable);
