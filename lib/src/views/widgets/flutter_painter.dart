@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_painter/src/controllers/notifications/drawable_double_tap_notification.dart';
 import 'package:flutter_painter/src/controllers/notifications/drawable_long_press_notification.dart';
+import 'package:flutter_painter/src/controllers/notifications/drawable_tap_notification.dart';
 import '../../controllers/events/selected_object_drawable_removed_event.dart';
 import '../../controllers/helpers/renderer_check/renderer_check.dart';
 import '../../controllers/drawables/drawable.dart';
@@ -27,8 +28,11 @@ import 'painter_controller_widget.dart';
 import 'dart:math' as math;
 
 part 'free_style_widget.dart';
+
 part 'text_widget.dart';
+
 part 'object_widget.dart';
+
 part 'shape_widget.dart';
 
 typedef DrawableCreatedCallback = Function(Drawable drawable);
@@ -36,6 +40,8 @@ typedef DrawableCreatedCallback = Function(Drawable drawable);
 typedef DrawableDeletedCallback = Function(Drawable drawable);
 
 typedef DrawableOnDoubleTapCallback = Function(Drawable drawable);
+
+typedef DrawableOnTapCallback = Function(Drawable drawable);
 
 typedef DrawableLongPressCallback = Function(Drawable drawable);
 
@@ -59,6 +65,8 @@ class FlutterPainter extends StatelessWidget {
 
   final DrawableOnDoubleTapCallback? onDoubleTabSelectedObjectDrawable;
 
+  final DrawableOnTapCallback? onTabSelectedObjectDrawable;
+
   final DrawableLongPressCallback? onLongPressObjectDrawable;
 
   /// Callback when the [PainterSettings] of [PainterController] are updated internally.
@@ -73,15 +81,15 @@ class FlutterPainter extends StatelessWidget {
   final FlutterPainterBuilderCallback _builder;
 
   /// Creates a [FlutterPainter] with the given [controller] and optional callbacks.
-  const FlutterPainter(
-      {Key? key,
-      required this.controller,
-      this.onDrawableCreated,
-      this.onDrawableDeleted,
-      this.onSelectedObjectDrawableChanged,
-      this.onPainterSettingsChanged,
-      this.onDoubleTabSelectedObjectDrawable,
-      this.onLongPressObjectDrawable})
+  const FlutterPainter({Key? key,
+    required this.controller,
+    this.onDrawableCreated,
+    this.onDrawableDeleted,
+    this.onSelectedObjectDrawableChanged,
+    this.onPainterSettingsChanged,
+    this.onDoubleTabSelectedObjectDrawable,
+    this.onTabSelectedObjectDrawable,
+    this.onLongPressObjectDrawable})
       : _builder = _defaultBuilder,
         super(key: key);
 
@@ -89,16 +97,16 @@ class FlutterPainter extends StatelessWidget {
   ///
   /// Using this constructor, the [builder] will be called any time the [controller] updates.
   /// It is useful if you want to build UI that automatically rebuilds on updates from [controller].
-  const FlutterPainter.builder(
-      {Key? key,
-      required this.controller,
-      required FlutterPainterBuilderCallback builder,
-      this.onDrawableCreated,
-      this.onDrawableDeleted,
-      this.onSelectedObjectDrawableChanged,
-      this.onPainterSettingsChanged,
-      this.onDoubleTabSelectedObjectDrawable,
-      this.onLongPressObjectDrawable})
+  const FlutterPainter.builder({Key? key,
+    required this.controller,
+    required FlutterPainterBuilderCallback builder,
+    this.onDrawableCreated,
+    this.onDrawableDeleted,
+    this.onSelectedObjectDrawableChanged,
+    this.onPainterSettingsChanged,
+    this.onDoubleTabSelectedObjectDrawable,
+    this.onTabSelectedObjectDrawable,
+    this.onLongPressObjectDrawable})
       : _builder = builder,
         super(key: key);
 
@@ -117,11 +125,11 @@ class FlutterPainter extends StatelessWidget {
                   onDrawableCreated: onDrawableCreated,
                   onDrawableDeleted: onDrawableDeleted,
                   onPainterSettingsChanged: onPainterSettingsChanged,
-                  onDoubleTabSelectedObjectDrawable:
-                      onDoubleTabSelectedObjectDrawable,
+                  onDoubleTabSelectedObjectDrawable: onDoubleTabSelectedObjectDrawable,
+                  onTabSelectedObjectDrawable : onTabSelectedObjectDrawable,
                   onLongPressObjectDrawable: onLongPressObjectDrawable,
                   onSelectedObjectDrawableChanged:
-                      onSelectedObjectDrawableChanged,
+                  onSelectedObjectDrawableChanged,
                 ));
           }),
     );
@@ -146,6 +154,8 @@ class _FlutterPainterWidget extends StatelessWidget {
 
   final DrawableOnDoubleTapCallback? onDoubleTabSelectedObjectDrawable;
 
+  final DrawableOnTapCallback? onTabSelectedObjectDrawable;
+
   final DrawableLongPressCallback? onLongPressObjectDrawable;
 
   /// Callback when the selected [ObjectDrawable] changes.
@@ -155,59 +165,60 @@ class _FlutterPainterWidget extends StatelessWidget {
   final ValueChanged<PainterSettings>? onPainterSettingsChanged;
 
   /// Creates a [_FlutterPainterWidget] with the given [controller] and optional callbacks.
-  const _FlutterPainterWidget(
-      {Key? key,
-      required this.controller,
-      this.onDrawableCreated,
-      this.onDrawableDeleted,
-      this.onSelectedObjectDrawableChanged,
-      this.onPainterSettingsChanged,
-      this.onDoubleTabSelectedObjectDrawable,
-      this.onLongPressObjectDrawable})
+  const _FlutterPainterWidget({Key? key,
+    required this.controller,
+    this.onDrawableCreated,
+    this.onDrawableDeleted,
+    this.onSelectedObjectDrawableChanged,
+    this.onPainterSettingsChanged,
+    this.onDoubleTabSelectedObjectDrawable,
+    this.onTabSelectedObjectDrawable,
+    this.onLongPressObjectDrawable})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Navigator(
-        onGenerateRoute: (settings) => PageRouteBuilder(
-            settings: settings,
-            opaque: false,
-            pageBuilder: (context, animation, secondaryAnimation) {
-              final controller = PainterController.of(context);
-              return NotificationListener<FlutterPainterNotification>(
-                onNotification: onNotification,
-                child: InteractiveViewer(
-                  transformationController: controller.transformationController,
-                  minScale: controller.settings.scale.enabled
-                      ? controller.settings.scale.minScale
-                      : 1,
-                  maxScale: controller.settings.scale.enabled
-                      ? controller.settings.scale.maxScale
-                      : 1,
-                  panEnabled: controller.settings.scale.enabled &&
-                      (controller.freeStyleSettings.mode == FreeStyleMode.none),
-                  scaleEnabled: controller.settings.scale.enabled,
-                  child: _FreeStyleWidget(
-                      // controller: controller,
-                      child: _TextWidget(
-                    // controller: controller,
-                    child: _ShapeWidget(
-                      // controller: controller,
-                      child: _ObjectWidget(
+        onGenerateRoute: (settings) =>
+            PageRouteBuilder(
+                settings: settings,
+                opaque: false,
+                pageBuilder: (context, animation, secondaryAnimation) {
+                  final controller = PainterController.of(context);
+                  return NotificationListener<FlutterPainterNotification>(
+                    onNotification: onNotification,
+                    child: InteractiveViewer(
+                      transformationController: controller.transformationController,
+                      minScale: controller.settings.scale.enabled
+                          ? controller.settings.scale.minScale
+                          : 1,
+                      maxScale: controller.settings.scale.enabled
+                          ? controller.settings.scale.maxScale
+                          : 1,
+                      panEnabled: controller.settings.scale.enabled &&
+                          (controller.freeStyleSettings.mode == FreeStyleMode.none),
+                      scaleEnabled: controller.settings.scale.enabled,
+                      child: _FreeStyleWidget(
                         // controller: controller,
-                        interactionEnabled: true,
-                        child: CustomPaint(
-                          painter: Painter(
-                            drawables: controller.value.drawables,
-                            background: controller.value.background,
-                          ),
-                        ),
-                      ),
+                          child: _TextWidget(
+                            // controller: controller,
+                            child: _ShapeWidget(
+                              // controller: controller,
+                              child: _ObjectWidget(
+                                // controller: controller,
+                                interactionEnabled: true,
+                                child: CustomPaint(
+                                  painter: Painter(
+                                    drawables: controller.value.drawables,
+                                    background: controller.value.background,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          )),
                     ),
-                  )),
-                ),
-              );
-            }));
+                  );
+                }));
   }
 
   /// Handles all notifications that might be dispatched from children.
@@ -224,6 +235,8 @@ class _FlutterPainterWidget extends StatelessWidget {
       onLongPressObjectDrawable?.call(notification.drawable);
     } else if (notification is DrawableDoubleTapNotification) {
       onDoubleTabSelectedObjectDrawable?.call(notification.drawable);
+    }else if (notification is DrawableTapNotification) {
+      onTabSelectedObjectDrawable?.call(notification.drawable);
     }
     return true;
   }
